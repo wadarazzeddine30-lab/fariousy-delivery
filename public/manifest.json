@@ -1,0 +1,53 @@
+{
+  "id": "/?app=driver",
+  "short_name": "FARIOUSY App",
+  "name": "FARIOUSY Driver — تطبيق الموزع",
+  "description": "تطبيق موزع شركة FARIOUSY DELIVERY لتوزيع وتوصيل الشحنات والطرود، المسح الضوئي وإدارة الصندوق النقدي.",
+  "start_url": "/?app=driver",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090d16",
+  "theme_color": "#dc2626",
+  "categories": ["business", "logistics", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/aistudio/WhatsApp_Image_2026-10-25_at_01.07.07_dafc315a.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/aistudio/WhatsApp_Image_2026-10-25_at_01.07.07_dafc315a.jpeg",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/aistudio/WhatsApp_Image_2026-10-25_at_01.07.07_dafc315a.jpeg",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "جولة اليوم",
+      "short_name": "الطرود",
+      "url": "/?app=driver&tab=tour",
+      "description": "عرض الشحنات المسندة لليوم"
+    },
+    {
+      "name": "سكانير الباركود",
+      "short_name": "سكانير",
+      "url": "/?app=driver&tab=scanner",
+      "description": "مسح الكودبار بالكاميرا"
+    },
+    {
+      "name": "الصندوق والنقود",
+      "short_name": "الصندوق",
+      "url": "/?app=driver&tab=cash",
+      "description": "مجموع المبالغ المحصلة"
+    }
+  ]
+}

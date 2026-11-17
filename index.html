@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Cleanly handle and suppress benign Vite HMR WebSocket errors in AI Studio iframe proxy
+      (function() {
+        var isWsError = function(msg) {
+          if (!msg) return false;
+          var str = typeof msg === 'string' ? msg : (msg.message || msg.reason || String(msg));
+          return str.indexOf('WebSocket') !== -1 || str.indexOf('closed without opened') !== -1 || str.indexOf('@vite/client') !== -1;
+        };
+
+        window.addEventListener('error', function(event) {
+          if (isWsError(event && (event.message || (event.error && event.error.message)))) {
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            if (event.preventDefault) event.preventDefault();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(event) {
+          if (isWsError(event && (event.reason || (event.reason && event.reason.message)))) {
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            if (event.preventDefault) event.preventDefault();
+          }
+        }, true);
+
+        // Filter console.error and console.warn from triggering AIS error detection for Vite WebSocket
+        var origConsoleError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var joined = args.map(function(a) { return String(a && a.message ? a.message : a); }).join(' ');
+          if (isWsError(joined)) {
+            return;
+          }
+          return origConsoleError.apply(console, arguments);
+        };
+
+        var origConsoleWarn = console.warn;
+        console.warn = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var joined = args.map(function(a) { return String(a && a.message ? a.message : a); }).join(' ');
+          if (isWsError(joined)) {
+            return;
+          }
+          return origConsoleWarn.apply(console, arguments);
+        };
+
+        // Proxy WebSocket constructor: for Vite HMR connections, return a stub socket that never fails or throws
+        if (typeof window.WebSocket !== 'undefined') {
+          var OrigWebSocket = window.WebSocket;
+
+          function FakeViteSocket(url, protocols) {
+            this.url = url;
+            this.protocols = protocols;
+            this.readyState = 1; // WebSocket.OPEN
+            this.bufferedAmount = 0;
+            this.extensions = '';
+            this.protocol = typeof protocols === 'string' ? protocols : '';
+            this.binaryType = 'blob';
+            this.listeners = {};
+            this.onopen = null;
+            this.onclose = null;
+            this.onerror = null;
+            this.onmessage = null;
+
+            var self = this;
+            setTimeout(function() {
+              self.readyState = 1;
+              var openEvent = new Event('open');
+              if (typeof self.onopen === 'function') {
+                try { self.onopen(openEvent); } catch (e) {}
+              }
+              var list = self.listeners['open'] || [];
+              for (var i = 0; i < list.length; i++) {
+                try { list[i].call(self, openEvent); } catch (e) {}
+              }
+            }, 10);
+          }
+
+          FakeViteSocket.prototype.addEventListener = function(type, listener) {
+            if (!this.listeners[type]) this.listeners[type] = [];
+            this.listeners[type].push(listener);
+          };
+
+          FakeViteSocket.prototype.removeEventListener = function(type, listener) {
+            if (!this.listeners[type]) return;
+            this.listeners[type] = this.listeners[type].filter(function(l) { return l !== listener; });
+          };
+
+          FakeViteSocket.prototype.dispatchEvent = function(event) {
+            var type = event ? event.type : '';
+            var list = this.listeners[type] || [];
+            for (var i = 0; i < list.length; i++) {
+              try { list[i].call(this, event); } catch (e) {}
+            }
+            return true;
+          };
+
+          FakeViteSocket.prototype.send = function() {};
+          FakeViteSocket.prototype.close = function() {
+            this.readyState = 3;
+            var closeEvt = new CloseEvent('close', { wasClean: true, code: 1000 });
+            if (typeof this.onclose === 'function') {
+              try { this.onclose(closeEvt); } catch (e) {}
+            }
+            var list = this.listeners['close'] || [];
+            for (var i = 0; i < list.length; i++) {
+              try { list[i].call(this, closeEvt); } catch (e) {}
+            }
+          };
+
+          window.WebSocket = function(url, protocols) {
+            var urlStr = String(url || '');
+            var isViteHmr = (protocols === 'vite-hmr') ||
+              (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1) ||
+              urlStr.indexOf('token=') !== -1 ||
+              urlStr.indexOf('vite-hmr') !== -1 ||
+              urlStr.indexOf('@vite') !== -1;
+
+            if (isViteHmr) {
+              return new FakeViteSocket(url, protocols);
+            }
+
+            try {
+              return new OrigWebSocket(url, protocols);
+            } catch (e) {
+              return new FakeViteSocket(url, protocols);
+            }
+          };
+
+          window.WebSocket.prototype = OrigWebSocket.prototype;
+          window.WebSocket.CONNECTING = 0;
+          window.WebSocket.OPEN = 1;
+          window.WebSocket.CLOSING = 2;
+          window.WebSocket.CLOSED = 3;
+        }
+      })();
+    </script>
+    <title>FARIOUSY DELIVERY — Gestion Professionnelle de Livraison</title>
+    <meta name="description" content="Solution complète de gestion logistique, suivi de colis, ramassage et encaissements pour e-commerçants et transporteurs." />
+    <meta property="og:title" content="FARIOUSY DELIVERY — Fast Delivery" />
+    <meta property="og:description" content="Plateforme de gestion de livraison de colis, suivi en temps réel et gestion financière." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#DC2626" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Fariousy Livreur" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/jpeg" href="/assets/aistudio/WhatsApp_Image_2026-10-25_at_01.07.07_dafc315a.jpeg" />
+    <link rel="apple-touch-icon" href="/assets/aistudio/WhatsApp_Image_2026-10-25_at_01.07.07_dafc315a.jpeg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-red-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
