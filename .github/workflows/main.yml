@@ -18,8 +18,9 @@ jobs:
           npx vite build
       - name: Setup Capacitor & Android
         run: |
+          rm -rf android capacitor.config.*
           npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
-          npx cap init "Fariousy Delivery" "com.fariousy.delivery" --web-dir=dist
+          echo '{"appId":"com.fariousy.delivery","appName":"Fariousy Delivery","webDir":"dist"}' > capacitor.config.json
           npx cap add android
           npx cap sync android
       - uses: actions/setup-java@v4
