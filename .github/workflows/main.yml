@@ -1,3 +1,4 @@
+
 name: Build Android APK
 on:
   push:
@@ -13,15 +14,13 @@ jobs:
           node-version: 20
       - name: Install & Build Web
         run: |
-          npm install
-          npm run build
-      - name: Setup Android (if needed)
+          npm install --legacy-peer-deps
+          npx vite build
+      - name: Setup Capacitor & Android
         run: |
-          if [ ! -d "android" ]; then
-            npm install @capacitor/core @capacitor/cli @capacitor/android
-            npx cap init "Fariousy Delivery" "com.fariousy.delivery" --web-dir=dist
-            npx cap add android
-          fi
+          npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
+          npx cap init "Fariousy Delivery" "com.fariousy.delivery" --web-dir=dist
+          npx cap add android
           npx cap sync android
       - uses: actions/setup-java@v4
         with:
