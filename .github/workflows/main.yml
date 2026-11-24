@@ -1,3 +1,16 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install & Build Web
         run: |
           cat << 'EOF' > .env
@@ -7,3 +20,43 @@
           npm install --legacy-peer-deps
           npm install react-is vite-plugin-pwa @tailwindcss/vite --legacy-peer-deps
           npx vite build
+      - name: Setup Capacitor & Android
+        run: |
+          rm -rf android capacitor.config.*
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets --legacy-peer-deps
+          echo '{"appId":"com.fariousy.delivery","appName":"Fariousy Delivery","webDir":"dist"}' > capacitor.config.json
+          npx cap add android
+          npx cap sync android
+      - name: Generate App Icons & Splash
+        run: |
+          if [ -f "logo.png" ]; then
+            mkdir -p resources
+            cp logo.png resources/icon.png
+            cp logo.png resources/splash.png
+            npx capacitor-assets generate --android
+          fi
+      - name: Fix Kotlin Duplicate Classes
+        run: |
+          cat << 'EOF' >> android/app/build.gradle
+
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+              }
+          }
+          EOF
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fariousy-delivery-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
