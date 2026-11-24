@@ -610,7 +610,9 @@ export async function createSupabasePackage(payload: CreatePackagePayload): Prom
   const tryPost = async (endpoint: string, token?: string) => {
     const hdrs: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) hdrs['Authorization'] = `Bearer ${token}`;
-    const r = await fetch(endpoint, {
+    const fullUrl = endpoint.startsWith('http') ? endpoint : `https://app.fariousy.com${endpoint}`;
+const r = await fetch(fullUrl, {
+
       method: 'POST',
       headers: hdrs,
       body: JSON.stringify(payload)
